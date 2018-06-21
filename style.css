@@ -1,0 +1,23 @@
+table, th, tr {
+  border: 1px solid gray;
+}
+
+table {
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+table th {
+  width: 2px;
+  height: 2px;
+}
+
+#title {
+  font-weight: bold;
+  font-size: 26px;
+}
+
+.wrapper {
+  display: grid;
+  justify-content: center;
+}
