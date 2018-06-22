@@ -2,19 +2,20 @@ window.onload = () => {
   let universe = [];
   let isDrawing;
   let rows = 100;
-  let column = 200;
+  let columns = 200;
   let interval;
 
   let grid = document.getElementById('grid');
   let start = document.getElementById('start');
   let random = document.getElementById('random');
   let stop = document.getElementById('stop');
+  let step = document.getElementById('step');
 
   // create grid
   for (let i = 0; i < rows; i++) {
     universe[i] = [];
     tr = grid.appendChild(document.createElement("tr"));
-    for (let j = 0; j < column; j++) {
+    for (let j = 0; j < columns; j++) {
       universe[i][j] = 0;
       th = document.createElement("th");
       th.setAttribute('id', `${i},${j}`);
@@ -23,17 +24,14 @@ window.onload = () => {
   }
 
   const gameOfLife = () => {
-    let rowLen = universe.length;
-    let colLen = universe[0].length;
-
-    for (let i = 0; i < rowLen; i++) {
-      for (let j = 0; j < colLen; j++) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
         neighbours(universe, i, j);
       }
     }
 
-    for (let i = 0; i < rowLen; i++) {
-      for (let j = 0; j < colLen; j++) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
         let count = Math.abs(universe[i][j]);
         if ((count < 2 || count > 3) && universe[i][j] > 0) {
           universe[i][j] = 0;
@@ -54,9 +52,9 @@ window.onload = () => {
         let indexI = i + paramI;
         let indexJ = y + paramJ;
         if (
-          indexI >= 0 && indexI < mass.length &&
-          indexJ >= 0 && indexJ < mass[0].length &&
-          mass[indexI][indexJ] === 1) {
+          indexI >= 0 && indexI < rows &&
+          indexJ >= 0 && indexJ < columns &&
+          mass[indexI][indexJ] > 0) {
           count++;
         }
       }
@@ -73,8 +71,8 @@ window.onload = () => {
   }
 
   const fillAliveCells = () => {
-    for (let i = 0; i < universe.length; i++) {
-      for (let j = 0; j < universe[0].length; j++) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
         if (universe[i][j] === 1) {
           document.getElementById(i + ',' + j).style.backgroundColor = 'black';
         } else {
@@ -85,8 +83,8 @@ window.onload = () => {
   }
 
   const fillRandomCells = () => {
-    for (let i = 0; i < universe.length; i++) {
-      for (let j = 0; j < universe[0].length; j++) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
         universe[i][j] = Math.floor(Math.random() * 2);
       }
     }
@@ -99,6 +97,11 @@ window.onload = () => {
 
   stop.addEventListener('click', () => {
     clearInterval(interval);
+  });
+
+  step.addEventListener('click', () => {
+    gameOfLife();
+    fillAliveCells();
   });
 
   grid.addEventListener('click', (e) => {
