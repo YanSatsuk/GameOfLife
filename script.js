@@ -1,25 +1,59 @@
 window.onload = () => {
   let universe = [];
   let isDrawing;
-  let rows = 100;
-  let columns = 200;
+  let rows = 60;
+  let columns = 100;
   let interval;
+  let ctx;
 
-  let grid = document.getElementById('grid');
+  let canvas = document.getElementById('grid');
   let start = document.getElementById('start');
   let random = document.getElementById('random');
   let stop = document.getElementById('stop');
   let step = document.getElementById('step');
 
-  // create grid
   for (let i = 0; i < rows; i++) {
     universe[i] = [];
-    tr = grid.appendChild(document.createElement("tr"));
     for (let j = 0; j < columns; j++) {
       universe[i][j] = 0;
-      th = document.createElement("th");
-      th.setAttribute('id', `${i},${j}`);
-      tr.appendChild(th);
+    }
+  }
+
+  const drawGrid = (w, h) => {
+    ctx = canvas.getContext('2d');
+    ctx.canvas.width = w;
+    ctx.canvas.height = h;
+
+    for (let x = 0; x <= w; x += 8) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      for (let y = 0; y <= h; y += 8) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+    }
+
+    ctx.strokeStyle = 'black';
+    ctx.stroke();
+  };
+
+  drawGrid(800, 480);
+
+  const fillCell = (e) => {
+    ctx.fillStyle = "black";
+    universe[Math.floor(e.offsetY / 8)][Math.floor(e.offsetX / 8)] = 1;
+    ctx.fillRect(Math.floor(e.offsetX / 8) * 8,
+      Math.floor(e.offsetY / 8) * 8,
+      8, 8);
+  }
+
+  const handleClick = (e) => {
+    fillCell(e);
+  }
+
+  const handleDraw = (e) => {
+    if (canvas.isDrawing) {
+      fillCell(e);
     }
   }
 
@@ -29,19 +63,7 @@ window.onload = () => {
         neighbours(universe, i, j);
       }
     }
-
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < columns; j++) {
-        let count = Math.abs(universe[i][j]);
-        if ((count < 2 || count > 3) && universe[i][j] > 0) {
-          universe[i][j] = 0;
-        } else if (count === 3 && universe[i][j] < 0) {
-          universe[i][j] = 1;
-        } else if ((count === 2 || count === 3) && universe[i][j] > 0) {
-          universe[i][j] = 1;
-        }
-      }
-    }
+    nextGeneration();
   }
 
   const neighbours = (mass, paramI, paramJ) => {
@@ -63,6 +85,21 @@ window.onload = () => {
     mass[paramI][paramJ] = count;
   }
 
+  const nextGeneration = () => {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
+        let count = Math.abs(universe[i][j]);
+        if ((count < 2 || count > 3) && universe[i][j] > 0) {
+          universe[i][j] = 0;
+        } else if (count === 3 && universe[i][j] < 0) {
+          universe[i][j] = 1;
+        } else if ((count === 2 || count === 3) && universe[i][j] > 0) {
+          universe[i][j] = 1;
+        }
+      }
+    }
+  }
+
   const startGame = () => {
     interval = setInterval(() => {
       gameOfLife();
@@ -71,12 +108,16 @@ window.onload = () => {
   }
 
   const fillAliveCells = () => {
+    ctx.clearRect(0, 0, 800, 480);
+    drawGrid(800, 480);
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < columns; j++) {
         if (universe[i][j] === 1) {
-          document.getElementById(i + ',' + j).style.backgroundColor = 'black';
+          ctx.fillStyle = "black";
+          ctx.fillRect(j * 8, i * 8, 8, 8);
         } else {
-          document.getElementById(i + ',' + j).style.backgroundColor = 'white';
+          ctx.fillStyle = "white";
+          ctx.fillRect(j * 8 + 1, i * 8 + 1, 6, 6);
         }
       }
     }
@@ -104,33 +145,15 @@ window.onload = () => {
     fillAliveCells();
   });
 
-  grid.addEventListener('click', (e) => {
-    let id = e.target.id;
-    let coor = id.split(',');
-    if (!isNaN(parseInt(coor[0], 10)) && !isNaN(parseInt(coor[1], 10))) {
-      universe[parseInt(coor[0], 10)][parseInt(coor[1], 10)] = 1;
-      document.getElementById(id.toString()).style.backgroundColor = 'black';
-    }
-  })
+  canvas.addEventListener('click', handleClick);
 
-  grid.addEventListener('mousemove', (e) => {
-    if (isDrawing) {
-      let id = e.target.id;
-      let coor = id.split(',');
-      if (isNaN(parseInt(coor[0], 10)) || isNaN(parseInt(coor[1], 10))) {
-        isDrawing = false;
-      } else {
-        universe[parseInt(coor[0], 10)][parseInt(coor[1], 10)] = 1;
-        document.getElementById(id.toString()).style.backgroundColor = 'black';
-      }
-    }
-  })
+  canvas.addEventListener('mousemove', handleDraw);
 
-  grid.addEventListener('mousedown', () => {
-    isDrawing = true;
-  })
+  canvas.addEventListener('mousedown', () => {
+    canvas.isDrawing = true;
+  });
 
-  grid.addEventListener('mouseup', () => {
-    isDrawing = false;
-  })
+  canvas.addEventListener('mouseup', () => {
+    canvas.isDrawing = false;
+  });
 }
