@@ -5,19 +5,24 @@ window.onload = () => {
   let columns = 100;
   let interval;
   let ctx;
+  let isStarted = false;
 
   let canvas = document.getElementById('grid');
   let start = document.getElementById('start');
   let random = document.getElementById('random');
-  let stop = document.getElementById('stop');
+  let reset = document.getElementById('reset');
   let step = document.getElementById('step');
 
-  for (let i = 0; i < rows; i++) {
-    universe[i] = [];
-    for (let j = 0; j < columns; j++) {
-      universe[i][j] = 0;
+  const emptyUniverse = () => {
+    for (let i = 0; i < rows; i++) {
+      universe[i] = [];
+      for (let j = 0; j < columns; j++) {
+        universe[i][j] = 0;
+      }
     }
   }
+
+  emptyUniverse();
 
   const drawGrid = (w, h) => {
     ctx = canvas.getContext('2d');
@@ -132,17 +137,38 @@ window.onload = () => {
     fillAliveCells();
   }
 
-  start.addEventListener('click', startGame);
+  start.addEventListener('click', () => {
+    if (!isStarted) {
+      startGame();
+      isStarted = true;
+      start.innerText = 'Pause';
+    } else {
+      clearInterval(interval);
+      isStarted = false;
+      start.innerText = 'Resume';
+    }
+  });
 
-  random.addEventListener('click', fillRandomCells);
+  random.addEventListener('click', () => {
+    if (!isStarted) fillRandomCells();
+  });
 
-  stop.addEventListener('click', () => {
-    clearInterval(interval);
+  reset.addEventListener('click', () => {
+    if (isStarted) {
+      clearInterval(interval);
+      start.innerText = 'Start';
+      isStarted = false;
+    }
+    emptyUniverse();
+    fillAliveCells();
+    start.innerText = 'Start';
   });
 
   step.addEventListener('click', () => {
-    gameOfLife();
-    fillAliveCells();
+    if (!isStarted) {
+      gameOfLife();
+      fillAliveCells();
+    }
   });
 
   canvas.addEventListener('click', handleClick);
